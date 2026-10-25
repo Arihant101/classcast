@@ -9,6 +9,7 @@ import { rateLimited } from "@/lib/rateLimit";
 import { getRoute, type Route } from "@/lib/route";
 import { MAX_BYTES } from "@/lib/safeFetch";
 import { getForecasts, type Weather } from "@/lib/weather";
+import { weekSummary, type WeekSummary } from "@/lib/weekSummary";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -63,7 +64,7 @@ export type PlannedClass = {
 
 export type DueItem = { id: string; title: string; source: string; start: string; allDay: boolean };
 
-export type PlanResponse = { home: LatLon; classes: PlannedClass[]; due: DueItem[]; brief: string | null; aiUsed: boolean; aiProvider?: "gemini" | "claude"; aiError?: string; warnings: string[] };
+export type PlanResponse = { home: LatLon; classes: PlannedClass[]; due: DueItem[]; brief: string | null; aiUsed: boolean; aiProvider?: "gemini" | "claude"; aiError?: string; warnings: string[]; week?: WeekSummary };
 
 const fail = (msg: string, status = 400) => NextResponse.json({ error: msg }, { status });
 
@@ -180,7 +181,10 @@ export async function POST(req: NextRequest) {
   );
   if (ai.ok) for (const c of classes) if (ai.bring[c.id]?.length) c.bring = ai.bring[c.id];
 
-  return NextResponse.json({ home, classes, due: dueOut, brief: ai.ok ? ai.brief : null, aiUsed: ai.ok, aiProvider: ai.ok ? ai.provider : undefined, aiError: ai.ok ? undefined : ai.reason, warnings } satisfies PlanResponse, {
+  // Multi-day plans get the "Weekend Reality Check" summary.
+  const week = to.getTime() - from.getTime() > 1.5 * 86_400_000 ? weekSummary(classes, tz) : undefined;
+
+  return NextResponse.json({ home, classes, due: dueOut, week, brief: ai.ok ? ai.brief : null, aiUsed: ai.ok, aiProvider: ai.ok ? ai.provider : undefined, aiError: ai.ok ? undefined : ai.reason, warnings } satisfies PlanResponse, {
     headers: { "cache-control": "no-store" },
   });
 }

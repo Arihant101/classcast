@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import ClassCard, { type Units } from "@/components/ClassCard";
+import WeekCheck from "@/components/WeekCheck";
 import type { PlanResponse } from "@/app/api/plan/route";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -91,6 +92,16 @@ function planText(plan: PlanResponse, when: When) {
     new Date(iso).toLocaleString([], { ...(when === "week" ? { weekday: "short" } : {}), hour: "numeric", minute: "2-digit" });
   const lines = [`ClassCast plan ${labelFor(when)}`, ""];
   if (plan.brief) lines.push(plan.brief, "");
+  if (plan.week) {
+    const w = plan.week;
+    const hm = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    lines.push("Weekend Reality Check");
+    if (w.busiest) lines.push(`• Busiest day: ${w.busiest.day} (${w.busiest.classes} classes, ${w.busiest.hours} h)`);
+    for (const r of w.risky) lines.push(`• Risky: ${r.day} ${r.from} → ${r.to}, ${r.gapMin} min gap for a ${r.travelMin} min trip`);
+    for (const d of w.rainyDays) lines.push(`• ${d.snow ? "Snow" : "Rain"}: ${d.day}`);
+    for (const f of w.freeWindows) lines.push(`• Free: ${f.day} ${hm(f.start)}–${hm(f.end)}`);
+    lines.push("");
+  }
   if (plan.classes.length) {
     lines.push("Classes");
     for (const c of plan.classes) {
@@ -436,6 +447,7 @@ export default function Page() {
                 {plan.aiProvider && <p className="mt-1 text-xs opacity-70">✨ Brief by {plan.aiProvider === "gemini" ? "Gemini" : "Claude"}</p>}
                 {!plan.aiUsed && <p className="mt-1 text-xs opacity-80">AI brief unavailable: {plan.aiError ?? "unknown error"} Showing the basics.</p>}
               </div>
+              {plan.week && <WeekCheck week={plan.week} />}
               {plan.due.length > 0 && (
                 <Card>
                   <CardHeader>
