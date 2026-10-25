@@ -79,6 +79,12 @@ function saveAsPdf(when: When) {
   window.print();
 }
 
+// Canvas titles look like "Homework 5 [CMPSC 360 Fall 2026]"; pull the course out of the brackets.
+function splitCourse(title: string) {
+  const m = title.match(/^(.*?)\s*\[([^\]]+)\]\s*$/);
+  return m ? { name: m[1], course: m[2] } : { name: title, course: "" };
+}
+
 // Plain-text version of the plan for email. Kept short so mailto/Gmail links stay under URL limits.
 function planText(plan: PlanResponse, when: When) {
   const t = (iso: string) =>
@@ -96,7 +102,10 @@ function planText(plan: PlanResponse, when: When) {
   }
   if (plan.due.length) {
     lines.push("Due");
-    for (const d of plan.due) lines.push(`- ${d.title} (${dueWhen(d)})`);
+    for (const d of plan.due) {
+      const { name, course } = splitCourse(d.title);
+      lines.push(`• ${name}${course ? ` (${course})` : ""}, due ${dueWhen(d)}`);
+    }
   }
   const text = lines.join("\n").trim();
   return text.length > 1800 ? text.slice(0, 1780) + "\n…(trimmed)" : text;
@@ -433,16 +442,18 @@ export default function Page() {
                     <CardTitle>📝 Due {labelFor(planWhen)}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                  <ul className="space-y-1 text-sm">
-                    {plan.due.map((d) => (
-                      <li key={d.id} className="flex justify-between gap-3">
-                        <span>
-                          {d.title}
+                  <ul className="list-disc space-y-1.5 pl-5 text-sm marker:text-primary">
+                    {plan.due.map((d) => {
+                      const { name, course } = splitCourse(d.title);
+                      return (
+                        <li key={d.id}>
+                          <span className="font-medium">{name}</span>
+                          {course && <span className="text-muted-foreground"> · {course}</span>}
                           {new Set(plan.due.map((x) => x.source)).size > 1 && <span className="text-xs text-muted-foreground"> · {d.source}</span>}
-                        </span>
-                        <span className="shrink-0 text-muted-foreground">{dueWhen(d)}</span>
-                      </li>
-                    ))}
+                          <span className="text-muted-foreground"> — due {dueWhen(d)}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
                   </CardContent>
                 </Card>
