@@ -82,6 +82,13 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* Map labels come from calendar titles: wrap instead of running off the map. */
+.leaflet-tooltip {
+  max-width: 14rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

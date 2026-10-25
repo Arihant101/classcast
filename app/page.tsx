@@ -298,7 +298,7 @@ export default function Page() {
             <ul className="flex flex-wrap gap-2">
               {files.map((f, i) => (
                 <li key={`${f.name}-${i}`}>
-                  <Badge className="pr-1">
+                  <Badge className="h-auto max-w-full py-0.5 pr-1 whitespace-normal wrap-anywhere">
                     📄 {f.name}
                     <button type="button" aria-label={`Remove ${f.name}`} className="rounded-full p-0.5 text-muted-foreground hover:text-foreground" onClick={() => setFiles((cur) => cur.filter((_, j) => j !== i))}>
                       <X className="size-3" />
@@ -403,8 +403,9 @@ export default function Page() {
       </CardContent>
       </Card>
 
+      {/* Calendar text is user-supplied and can hold long unbroken strings (URLs, codes): let it wrap anywhere. */}
       {plan && (
-        <section className="mt-6 space-y-4">
+        <section className="mt-6 space-y-4 wrap-anywhere">
           <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
             <h2 className="font-semibold">Your plan {labelFor(planWhen)}</h2>
             <div className="flex flex-wrap gap-2 text-sm">

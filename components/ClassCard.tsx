@@ -50,7 +50,7 @@ export default function ClassCard({
     <article>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="truncate font-semibold">
+          <h3 className="font-semibold">
             <span className="mr-2 text-muted-foreground">{index + 1}.</span>
             {c.title}
           </h3>
@@ -88,7 +88,7 @@ export default function ClassCard({
         <ul className="mt-3 flex flex-wrap gap-2">
           {c.bring.map((b) => (
             <li key={b}>
-              <Badge>{b}</Badge>
+              <Badge className="h-auto py-0.5 whitespace-normal">{b}</Badge>
             </li>
           ))}
         </ul>
