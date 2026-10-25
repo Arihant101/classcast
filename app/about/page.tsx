@@ -11,19 +11,21 @@ const features = [
   { title: "Walking route", body: "Your path between buildings, on a map." },
   { title: "Bring list", body: "Umbrella, boots, or nothing extra." },
   { title: "Daily brief", body: "A short AI summary of your day." },
-  { title: "Due list", body: "Canvas assignments and deadlines, kept apart from your classes." },
+  { title: "Due list", body: "Canvas assignments as bullet points, kept apart from your classes." },
+  { title: "Reality Check", body: "Busiest day, risky back-to-backs, rainy days, and free windows for the week." },
   { title: "Save or share", body: "Save your plan as a PDF, or send it with Gmail or email." },
 ];
 
 const stack = [
   { label: "Stack", body: "Next.js on Vercel, with code in GitHub." },
+  { label: "UI", body: "shadcn/ui on Base UI, Inter, and a red-orange and cyan theme. Works in light, dark, and print." },
   {
     label: "Data",
     body: "The calendar link supplies the locations. Open-Meteo gives the forecast. OpenRouteService gives routes. OpenStreetMap gives geocoding and map tiles.",
   },
   {
     label: "AI",
-    body: "Gemini (or Claude as a fallback) writes the bring list and brief. The code does the time math, so the AI can't invent leave times.",
+    body: "Gemini (or Claude if there's no Gemini key) writes the bring list and brief. The code does the time math, so the AI can't invent leave times.",
   },
 ];
 
@@ -47,6 +49,10 @@ const challenges = [
   {
     title: "Canvas feeds",
     body: "Canvas assignments are all-day or zero-length events, so they were dropped or showed up as fake classes. We split them into a Due list and matched all-day items by your own time zone.",
+  },
+  {
+    title: "Blocked registry",
+    body: "The build sandbox couldn't reach the shadcn registry, so we recreated the preset's theme and components by hand.",
   },
   {
     title: "Live APIs",
