@@ -11,6 +11,8 @@ const features = [
   { title: "Walking route", body: "Your path between buildings, on a map." },
   { title: "Bring list", body: "Umbrella, boots, or nothing extra." },
   { title: "Daily brief", body: "A short AI summary of your day." },
+  { title: "Due list", body: "Canvas assignments and deadlines, kept apart from your classes." },
+  { title: "Save or share", body: "Save your plan as a PDF, or send it with Gmail or email." },
 ];
 
 const stack = [
@@ -43,6 +45,10 @@ const challenges = [
     body: "Vercel built the empty main branch. Merging the PR fixed it.",
   },
   {
+    title: "Canvas feeds",
+    body: "Canvas assignments are all-day or zero-length events, so they were dropped or showed up as fake classes. We split them into a Due list and matched all-day items by your own time zone.",
+  },
+  {
     title: "Live APIs",
     body: "The build sandbox blocked the weather and map APIs, so we tested with mock data first.",
   },
@@ -52,6 +58,7 @@ const lessons = [
   "Keep API keys server-side.",
   "Treat user URLs and calendar text as hostile input.",
   "Let code do the math and AI do the language.",
+  "Real calendar feeds are messier than the spec: test with the shapes people actually use.",
 ];
 
 const card = "rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900";
@@ -80,8 +87,8 @@ export default function AboutPage() {
       <section className={section} aria-labelledby="what-it-does">
         <h2 id="what-it-does" className={heading}>What it does</h2>
         <p>
-          Paste your class calendar link (or several, or upload .ics files). ClassCast reads each event&rsquo;s
-          location, checks the weather, and gives you:
+          Paste up to 5 calendar links (like LionPATH and Canvas), or drag in .ics files. ClassCast reads each
+          event&rsquo;s location, checks the weather, and gives you:
         </p>
         <ul className="grid gap-3 sm:grid-cols-2">
           {features.map((f) => (
@@ -120,7 +127,7 @@ export default function AboutPage() {
           <span className="not-italic text-slate-500">&minus;</span>
           <span>t<sub className="not-italic">weather</sub></span>
         </div>
-        <p className="text-sm text-slate-500">With a 5 minute buffer and extra time for rain or snow.</p>
+        <p className="text-sm text-slate-500">With a 5 minute buffer, plus 15% more travel time in rain and 25% in snow.</p>
       </section>
 
       <section className={section} aria-labelledby="challenges">
