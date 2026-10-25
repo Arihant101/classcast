@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import ClassCard, { type Units } from "@/components/ClassCard";
 import type { PlanResponse } from "@/app/api/plan/route";
@@ -339,6 +340,10 @@ export default function Page() {
 
       <footer className="mt-10 text-center text-xs text-slate-400">
         Weather: Open-Meteo · Maps: © OpenStreetMap · Routes: openrouteservice · AI: Gemini
+        <span className="mx-1">·</span>
+        <Link href="/about" className="underline hover:text-slate-600 dark:hover:text-slate-300">
+          About
+        </Link>
       </footer>
     </main>
   );
