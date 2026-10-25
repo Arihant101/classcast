@@ -49,7 +49,7 @@ browser ──POST /api/plan──▶ safeFetch (iCal) ─▶ parse + expand rep
 - **SSRF:** iCal URLs are user input fetched by the server (each one separately, max 5). `lib/safeFetch.ts` allows only http/https/webcal on default ports, blocks private/loopback/link-local/metadata IPs, checks the IP at connect time (no DNS-rebinding gap), re-checks every redirect (max 3), and caps time (5 s) and size (2 MB).
 - **Secrets:** API keys are server-only env vars. Private iCal links work like passwords, so they're never logged or stored.
 - **Prompt injection:** calendar text is untrusted. It goes to the model as JSON data with no tools, and the output is schema-validated and length-capped. Times are computed in code, not by the model.
-- **XSS:** everything is rendered as text by React; strict-ish CSP and security headers in `next.config.ts`.
+- **XSS:** everything is rendered as text by React. A per-request nonce CSP (`proxy.ts`) blocks injected scripts, plus HSTS and other headers in `next.config.ts`.
 - **Abuse:** per-IP rate limit on `/api/plan` (in-memory, per instance).
 
 ## Tests
