@@ -121,6 +121,7 @@ const pill = (on: boolean) =>
 export default function Page() {
   const [links, setLinks] = useState<string[]>([""]);
   const [files, setFiles] = useState<{ name: string; text: string }[]>([]);
+  const [dragging, setDragging] = useState(false);
   const [gps, setGps] = useState<Home>(null);
   const [address, setAddress] = useState("");
   const [locating, setLocating] = useState(false);
@@ -156,13 +157,31 @@ export default function Page() {
 
   async function onFiles(list: FileList | null) {
     if (!list) return;
+    const picked = Array.from(list);
+    const ics = picked.filter((f) => /\.ics$/i.test(f.name) || f.type === "text/calendar");
+    if (ics.length < picked.length) return setError("Only .ics calendar files can be added.");
     const added: { name: string; text: string }[] = [];
-    for (const f of Array.from(list)) {
+    for (const f of ics) {
       if (f.size > 2 * 1024 * 1024) return setError(`${f.name} is over 2 MB.`);
       added.push({ name: f.name, text: await f.text() });
     }
     if (calendarCount + added.length > MAX_CALENDARS) return setError(`Up to ${MAX_CALENDARS} calendars at a time.`);
     setFiles((cur) => [...cur, ...added]);
+    setError("");
+  }
+
+  // Drop .ics files, or a calendar link dragged from another tab.
+  function onDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragging(false);
+    if (e.dataTransfer.files.length) return onFiles(e.dataTransfer.files);
+    const url = (e.dataTransfer.getData("text/uri-list") || e.dataTransfer.getData("text/plain")).split("\n")[0].trim();
+    if (!/^(https?|webcal):\/\//i.test(url)) return setError("Drop a .ics file or a calendar link.");
+    if (calendarCount >= MAX_CALENDARS) return setError(`Up to ${MAX_CALENDARS} calendars at a time.`);
+    setLinks((cur) => {
+      const empty = cur.findIndex((l) => !l.trim());
+      return empty === -1 ? [...cur, url] : cur.map((l, i) => (i === empty ? url : l));
+    });
     setError("");
   }
 
@@ -212,7 +231,17 @@ export default function Page() {
       </header>
 
       <form onSubmit={submit} className="space-y-4 print:hidden rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-        <div className="space-y-2">
+        <div
+          className={`space-y-2 rounded-lg transition ${dragging ? "bg-blue-50 outline-2 outline-dashed outline-offset-4 outline-blue-500 dark:bg-blue-950" : ""}`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragging(false);
+          }}
+          onDrop={onDrop}
+        >
           <label className="block text-sm font-medium" htmlFor="ical-0">
             Class calendars (iCal links)
           </label>
@@ -254,26 +283,32 @@ export default function Page() {
               ))}
             </ul>
           )}
+          {links.length + files.length < MAX_CALENDARS && (
+            <label
+              className={`flex cursor-pointer flex-col items-center rounded-lg border-2 border-dashed px-3 py-4 text-sm ${
+                dragging ? "border-blue-500 text-blue-600" : "border-slate-300 text-slate-500 dark:border-slate-700"
+              }`}
+            >
+              <span>📥 {dragging ? "Drop to add" : "Drag .ics files or a calendar link here"}</span>
+              <span className="text-xs">or click to choose files</span>
+              <input
+                type="file"
+                accept=".ics,text/calendar"
+                multiple
+                className="sr-only"
+                onChange={(e) => {
+                  onFiles(e.target.files);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+          )}
           <p className="text-xs text-slate-500">
             {links.length + files.length < MAX_CALENDARS && (
               <>
                 <button type="button" className="text-blue-600 underline" onClick={() => setLinks((cur) => [...cur, ""])}>
                   + add another link
                 </button>
-                {" or "}
-                <label className="cursor-pointer text-blue-600 underline">
-                  upload .ics files
-                  <input
-                    type="file"
-                    accept=".ics,text/calendar"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => {
-                      onFiles(e.target.files);
-                      e.target.value = "";
-                    }}
-                  />
-                </label>
                 {". "}
               </>
             )}
