@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Page not found | ClassCast",
@@ -13,12 +15,12 @@ export default function NotFound() {
         🌧️
       </div>
       <h1 className="mt-4 text-3xl font-bold">404: this page got rained out</h1>
-      <p className="mt-2 text-slate-500">
+      <p className="mt-2 text-muted-foreground">
         We could not find the page you were looking for. It may have moved, or the link might have a typo.
       </p>
       <Link
         href="/"
-        className="mt-6 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className={cn(buttonVariants(), "mt-6")}
       >
         Back to ClassCast
       </Link>

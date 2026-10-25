@@ -1,4 +1,6 @@
 import type { PlannedClass } from "@/app/api/plan/route";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import type { Weather } from "@/lib/weather";
 
 export type Units = "F" | "C";
@@ -22,7 +24,7 @@ const time = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "nume
 function WeatherLine({ w, units }: { w: Weather; units: Units }) {
   const [icon, label] = describe(w.code);
   return (
-    <p className="text-sm text-slate-600 dark:text-slate-300">
+    <p className="text-sm text-muted-foreground">
       {icon} {label} · {temp(w.tempC, units)} (feels {temp(w.feelsC, units)}) · 💧 {w.precipProb}% · 💨 {wind(w.windKmh, units)}
     </p>
   );
@@ -44,22 +46,23 @@ export default function ClassCard({
   showSource?: boolean;
 }) {
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <Card className="block px-4">
+    <article>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="truncate font-semibold">
-            <span className="mr-2 text-slate-400">{index + 1}.</span>
+            <span className="mr-2 text-muted-foreground">{index + 1}.</span>
             {c.title}
           </h3>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-muted-foreground">
             {time(c.start)}–{time(c.end)} · {c.location || "no location"}
           </p>
-          {showSource && <p className="mt-0.5 text-xs text-slate-400">📅 {c.source}</p>}
+          {showSource && <p className="mt-0.5 text-xs text-muted-foreground">📅 {c.source}</p>}
         </div>
         {c.leaveBy && (
           <div className="shrink-0 text-right">
-            <p className="text-xs uppercase tracking-wide text-slate-500">Leave by</p>
-            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{time(c.leaveBy)}</p>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Leave by</p>
+            <p className="text-2xl font-bold text-primary">{time(c.leaveBy)}</p>
           </div>
         )}
       </div>
@@ -75,21 +78,22 @@ export default function ClassCard({
         {c.route && (
           <p className="text-sm">
             {MODE_ICON[mode]} {c.travelMin} min from {c.from} · {(c.route.meters / 1609).toFixed(1)} mi
-            {c.route.estimated && <span className="text-slate-400"> (estimate)</span>}
+            {c.route.estimated && <span className="text-muted-foreground"> (estimate)</span>}
           </p>
         )}
-        {c.weather ? <WeatherLine w={c.weather} units={units} /> : c.coords && <p className="text-sm text-slate-400">No forecast yet for this time.</p>}
+        {c.weather ? <WeatherLine w={c.weather} units={units} /> : c.coords && <p className="text-sm text-muted-foreground">No forecast yet for this time.</p>}
       </div>
 
       {c.bring.length > 0 && (
         <ul className="mt-3 flex flex-wrap gap-2">
           {c.bring.map((b) => (
-            <li key={b} className="rounded-full bg-slate-100 px-3 py-1 text-xs dark:bg-slate-800">
-              {b}
+            <li key={b}>
+              <Badge>{b}</Badge>
             </li>
           ))}
         </ul>
       )}
     </article>
+    </Card>
   );
 }

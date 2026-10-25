@@ -1,10 +1,90 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
+/* shadcn/ui theme: preset b37av54z4 (Base UI, Nova style, mauve base, violet theme, Inter, large radius).
+   Dark mode follows the system setting, like the rest of the app. */
 :root {
   color-scheme: light dark;
+  --radius: 0.875rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0.008 326);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0.008 326);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0.008 326);
+  --primary: oklch(0.541 0.281 293.009);
+  --primary-foreground: oklch(0.969 0.016 293.756);
+  --secondary: oklch(0.96 0.003 325.6);
+  --secondary-foreground: oklch(0.212 0.019 322.12);
+  --muted: oklch(0.96 0.003 325.6);
+  --muted-foreground: oklch(0.542 0.034 322.5);
+  --accent: oklch(0.96 0.003 325.6);
+  --accent-foreground: oklch(0.212 0.019 322.12);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0.005 325.62);
+  --input: oklch(0.922 0.005 325.62);
+  --ring: oklch(0.702 0.183 293.541);
+  --page: oklch(0.985 0.002 326);
 }
-body {
-  @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: oklch(0.145 0.008 326);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.212 0.019 322.12);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.212 0.019 322.12);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.606 0.25 292.717);
+    --primary-foreground: oklch(0.969 0.016 293.756);
+    --secondary: oklch(0.263 0.024 320.12);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.263 0.024 320.12);
+    --muted-foreground: oklch(0.711 0.019 323.02);
+    --accent: oklch(0.263 0.024 320.12);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.541 0.281 293.009);
+    --page: oklch(0.145 0.008 326);
+  }
+}
+
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-page: var(--page);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-page font-sans text-foreground;
+  }
 }
 
 /* Save as PDF (browser print): plain, ink-friendly, readable in any theme */
@@ -25,7 +105,11 @@ body {
     box-shadow: none !important;
   }
   article,
-  li {
+  li,
+  [data-slot="card"] {
     break-inside: avoid;
+  }
+  [data-slot="card"] {
+    border: 1px solid #ccc;
   }
 }
