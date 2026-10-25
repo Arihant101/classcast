@@ -4,7 +4,7 @@ import { Fragment } from "react";
 import { CircleMarker, MapContainer, Polyline, TileLayer, Tooltip } from "react-leaflet";
 import type { PlanResponse } from "@/app/api/plan/route";
 
-const COLORS = ["#2563eb", "#db2777", "#16a34a", "#ea580c", "#7c3aed", "#0891b2"];
+const COLORS = ["#0891b2", "#ea580c", "#dc2626", "#06b6d4", "#f97316", "#e11d48"];
 
 export default function RouteMap({ plan }: { plan: PlanResponse }) {
   const pts: [number, number][] = [[plan.home.lat, plan.home.lon]];

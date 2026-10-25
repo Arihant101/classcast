@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import "@fontsource-variable/inter";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 

@@ -5,6 +5,13 @@ import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import ClassCard, { type Units } from "@/components/ClassCard";
 import type { PlanResponse } from "@/app/api/plan/route";
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { CalendarCheck, FileDown, Mail, MapPin, Plus, Send, Upload, X } from "lucide-react";
 
 // Leaflet touches `window`, so render it client-side only.
 const RouteMap = dynamic(() => import("@/components/RouteMap"), { ssr: false });
@@ -72,6 +79,12 @@ function saveAsPdf(when: When) {
   window.print();
 }
 
+// Canvas titles look like "Homework 5 [CMPSC 360 Fall 2026]"; pull the course out of the brackets.
+function splitCourse(title: string) {
+  const m = title.match(/^(.*?)\s*\[([^\]]+)\]\s*$/);
+  return m ? { name: m[1], course: m[2] } : { name: title, course: "" };
+}
+
 // Plain-text version of the plan for email. Kept short so mailto/Gmail links stay under URL limits.
 function planText(plan: PlanResponse, when: When) {
   const t = (iso: string) =>
@@ -89,7 +102,10 @@ function planText(plan: PlanResponse, when: When) {
   }
   if (plan.due.length) {
     lines.push("Due");
-    for (const d of plan.due) lines.push(`- ${d.title} (${dueWhen(d)})`);
+    for (const d of plan.due) {
+      const { name, course } = splitCourse(d.title);
+      lines.push(`• ${name}${course ? ` (${course})` : ""}, due ${dueWhen(d)}`);
+    }
   }
   const text = lines.join("\n").trim();
   return text.length > 1800 ? text.slice(0, 1780) + "\n…(trimmed)" : text;
@@ -112,11 +128,7 @@ const dueWhen = (d: { start: string; allDay: boolean }) =>
 
 const dayHeading = (iso: string) => new Date(iso).toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
 
-const input =
-  "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900";
-const action = "rounded-lg border border-slate-300 px-3 py-1.5 dark:border-slate-700";
-const pill = (on: boolean) =>
-  `rounded-full px-3 py-1 text-sm ${on ? "bg-blue-600 text-white" : "bg-slate-200 dark:bg-slate-800"}`;
+const pill = (on: boolean) => cn(buttonVariants({ variant: on ? "default" : "secondary", size: "sm" }), "rounded-full");
 
 export default function Page() {
   const [links, setLinks] = useState<string[]>([""]);
@@ -227,12 +239,14 @@ export default function Page() {
     <main className="mx-auto max-w-2xl px-4 py-8">
       <header className="mb-6">
         <h1 className="text-3xl font-bold">ClassCast ☔</h1>
-        <p className="text-slate-500">When to leave, what to bring, and how to get there.</p>
+        <p className="text-muted-foreground">When to leave, what to bring, and how to get there.</p>
       </header>
 
-      <form onSubmit={submit} className="space-y-4 print:hidden rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+      <Card className="print:hidden">
+      <CardContent>
+      <form onSubmit={submit} className="space-y-5">
         <div
-          className={`space-y-2 rounded-lg transition ${dragging ? "bg-blue-50 outline-2 outline-dashed outline-offset-4 outline-blue-500 dark:bg-blue-950" : ""}`}
+          className={cn("space-y-2 rounded-lg transition", dragging && "bg-primary/5 outline-2 outline-offset-4 outline-primary outline-dashed")}
           onDragOver={(e) => {
             e.preventDefault();
             setDragging(true);
@@ -242,14 +256,11 @@ export default function Page() {
           }}
           onDrop={onDrop}
         >
-          <label className="block text-sm font-medium" htmlFor="ical-0">
-            Class calendars (iCal links)
-          </label>
+          <Label htmlFor="ical-0">Class calendars (iCal links)</Label>
           {links.map((link, i) => (
             <div key={i} className="flex gap-2">
-              <input
+              <Input
                 id={`ical-${i}`}
-                className={input}
                 type="url"
                 inputMode="url"
                 autoComplete="off"
@@ -260,36 +271,41 @@ export default function Page() {
                 onChange={(e) => setLinks((cur) => cur.map((l, j) => (j === i ? e.target.value : l)))}
               />
               {links.length > 1 && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   aria-label={`Remove calendar link ${i + 1}`}
-                  className="rounded-lg px-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                   onClick={() => setLinks((cur) => cur.filter((_, j) => j !== i))}
                 >
-                  ✕
-                </button>
+                  <X />
+                </Button>
               )}
             </div>
           ))}
           {files.length > 0 && (
             <ul className="flex flex-wrap gap-2">
               {files.map((f, i) => (
-                <li key={`${f.name}-${i}`} className="flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs dark:bg-slate-800">
-                  📄 {f.name}
-                  <button type="button" aria-label={`Remove ${f.name}`} className="text-slate-500" onClick={() => setFiles((cur) => cur.filter((_, j) => j !== i))}>
-                    ✕
-                  </button>
+                <li key={`${f.name}-${i}`}>
+                  <Badge className="pr-1">
+                    📄 {f.name}
+                    <button type="button" aria-label={`Remove ${f.name}`} className="rounded-full p-0.5 text-muted-foreground hover:text-foreground" onClick={() => setFiles((cur) => cur.filter((_, j) => j !== i))}>
+                      <X className="size-3" />
+                    </button>
+                  </Badge>
                 </li>
               ))}
             </ul>
           )}
           {links.length + files.length < MAX_CALENDARS && (
             <label
-              className={`flex cursor-pointer flex-col items-center rounded-lg border-2 border-dashed px-3 py-4 text-sm ${
-                dragging ? "border-blue-500 text-blue-600" : "border-slate-300 text-slate-500 dark:border-slate-700"
-              }`}
+              className={cn(
+                "flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 border-dashed px-3 py-4 text-sm transition-colors hover:bg-muted/50",
+                dragging ? "border-primary text-primary" : "text-muted-foreground",
+              )}
             >
-              <span>📥 {dragging ? "Drop to add" : "Drag .ics files or a calendar link here"}</span>
+              <Upload className="size-5" />
+              <span>{dragging ? "Drop to add" : "Drag .ics files or a calendar link here"}</span>
               <span className="text-xs">or click to choose files</span>
               <input
                 type="file"
@@ -303,33 +319,30 @@ export default function Page() {
               />
             </label>
           )}
-          <p className="text-xs text-slate-500">
-            {links.length + files.length < MAX_CALENDARS && (
-              <>
-                <button type="button" className="text-blue-600 underline" onClick={() => setLinks((cur) => [...cur, ""])}>
-                  + add another link
-                </button>
-                {". "}
-              </>
-            )}
+          {links.length + files.length < MAX_CALENDARS && (
+            <Button type="button" variant="ghost" size="sm" onClick={() => setLinks((cur) => [...cur, ""])}>
+              <Plus /> Add another link
+            </Button>
+          )}
+          <p className="text-xs text-muted-foreground">
             Up to {MAX_CALENDARS} calendars. Links are only used for this request and never saved.
           </p>
         </div>
 
         <div className="space-y-2">
-          <span className="block text-sm font-medium">Starting from</span>
+          <Label>Starting from</Label>
           <div className="flex flex-wrap items-center gap-2">
-            <button type="button" onClick={useMyLocation} className="rounded-lg bg-slate-900 px-3 py-2 text-sm text-white dark:bg-slate-100 dark:text-slate-900">
-              {locating ? "Locating…" : gps ? "📍 Using your location" : "📍 Use my location"}
-            </button>
+            <Button type="button" variant="outline" onClick={useMyLocation}>
+              <MapPin /> {locating ? "Locating…" : gps ? "Using your location" : "Use my location"}
+            </Button>
             {gps && (
-              <button type="button" className="text-xs text-slate-500 underline" onClick={() => setGps(null)}>
-                clear
-              </button>
+              <Button type="button" variant="link" size="sm" onClick={() => setGps(null)}>
+                Clear
+              </Button>
             )}
           </div>
           {!gps && (
-            <input className={input} placeholder="or type your address (e.g. 123 College Ave, State College)" value={address} onChange={(e) => setAddress(e.target.value)} />
+            <Input placeholder="or type your address (e.g. 123 College Ave, State College)" value={address} onChange={(e) => setAddress(e.target.value)} />
           )}
         </div>
 
@@ -354,7 +367,7 @@ export default function Page() {
               <input
                 type="date"
                 aria-label="Pick a date"
-                className={`${pill(when.length === 10)} border-0`}
+                className={pill(when.length === 10)}
                 min={isoDate(midnight())}
                 max={isoDate(midnight(15))}
                 value={when.length === 10 ? when : ""}
@@ -371,25 +384,27 @@ export default function Page() {
           </div>
         </div>
 
-        <button disabled={loading} className="w-full rounded-lg bg-blue-600 py-2.5 font-semibold text-white disabled:opacity-60">
-          {loading ? "Planning…" : when === "week" ? "Plan my week" : "Plan my day"}
-        </button>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        <Button type="submit" size="lg" disabled={loading} className="w-full">
+          <CalendarCheck /> {loading ? "Planning…" : when === "week" ? "Plan my week" : "Plan my day"}
+        </Button>
+        {error && <p className="text-sm text-destructive">{error}</p>}
       </form>
+      </CardContent>
+      </Card>
 
       {plan && (
         <section className="mt-6 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
             <h2 className="font-semibold">Your plan {labelFor(planWhen)}</h2>
             <div className="flex flex-wrap gap-2 text-sm">
-              <button type="button" onClick={() => saveAsPdf(planWhen)} className={action}>
-                📄 Save as PDF
-              </button>
-              <a href={emailLinks(plan, planWhen).gmail} target="_blank" rel="noopener noreferrer" className={action}>
-                ✉️ Gmail
+              <Button type="button" variant="outline" size="sm" onClick={() => saveAsPdf(planWhen)}>
+                <FileDown /> Save as PDF
+              </Button>
+              <a href={emailLinks(plan, planWhen).gmail} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "outline", size: "sm" })}>
+                <Send /> Gmail
               </a>
-              <a href={emailLinks(plan, planWhen).mailto} className={action}>
-                📧 Email
+              <a href={emailLinks(plan, planWhen).mailto} className={buttonVariants({ variant: "outline", size: "sm" })}>
+                <Mail /> Email
               </a>
             </div>
           </div>
@@ -402,10 +417,10 @@ export default function Page() {
             </ul>
           )}
           {plan.classes.length === 0 && plan.due.length === 0 ? (
-            <p className="text-center text-slate-500">Nothing on your calendar {labelFor(planWhen)}. Enjoy 🎉</p>
+            <p className="text-center text-muted-foreground">Nothing on your calendar {labelFor(planWhen)}. Enjoy 🎉</p>
           ) : (
             <>
-              <div className="rounded-xl bg-blue-600 p-4 text-white">
+              <div className="rounded-xl bg-linear-to-r from-red-600 to-orange-500 p-4 text-white">
                 {plan.classes.length === 0 && <p className="text-lg font-semibold">No classes {labelFor(planWhen)}</p>}
                 {first && (
                   <p className="text-lg font-semibold">
@@ -422,20 +437,26 @@ export default function Page() {
                 {!plan.aiUsed && <p className="mt-1 text-xs opacity-80">AI brief unavailable: {plan.aiError ?? "unknown error"} Showing the basics.</p>}
               </div>
               {plan.due.length > 0 && (
-                <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-                  <h2 className="mb-2 font-semibold">📝 Due {labelFor(planWhen)}</h2>
-                  <ul className="space-y-1 text-sm">
-                    {plan.due.map((d) => (
-                      <li key={d.id} className="flex justify-between gap-3">
-                        <span>
-                          {d.title}
-                          {new Set(plan.due.map((x) => x.source)).size > 1 && <span className="text-xs text-slate-500"> · {d.source}</span>}
-                        </span>
-                        <span className="shrink-0 text-slate-500">{dueWhen(d)}</span>
-                      </li>
-                    ))}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>📝 Due {labelFor(planWhen)}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                  <ul className="list-disc space-y-1.5 pl-5 text-sm marker:text-highlight">
+                    {plan.due.map((d) => {
+                      const { name, course } = splitCourse(d.title);
+                      return (
+                        <li key={d.id}>
+                          <span className="font-medium">{name}</span>
+                          {course && <span className="text-muted-foreground"> · {course}</span>}
+                          {new Set(plan.due.map((x) => x.source)).size > 1 && <span className="text-xs text-muted-foreground"> · {d.source}</span>}
+                          <span className="text-muted-foreground"> — due {dueWhen(d)}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
-                </div>
+                  </CardContent>
+                </Card>
               )}
               {plan.classes.length > 0 && (
                 <div className="print:hidden">
@@ -456,10 +477,10 @@ export default function Page() {
         </section>
       )}
 
-      <footer className="mt-10 print:hidden text-center text-xs text-slate-400">
+      <footer className="mt-10 print:hidden text-center text-xs text-muted-foreground">
         Weather: Open-Meteo · Maps: © OpenStreetMap · Routes: openrouteservice · AI: Gemini
         <span className="mx-1">·</span>
-        <Link href="/about" className="underline hover:text-slate-600 dark:hover:text-slate-300">
+        <Link href="/about" className="underline hover:text-foreground">
           About
         </Link>
       </footer>
