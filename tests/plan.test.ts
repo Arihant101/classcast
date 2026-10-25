@@ -97,6 +97,21 @@ describe("POST /api/plan", () => {
 
     expect(club.note).toBe("Online class.");
     expect(plan.aiUsed).toBe(false); // no key in tests
+    expect(plan.week).toBeUndefined(); // single day: no weekly check
+  }, 20_000);
+
+  it("adds the Weekend Reality Check for a week range", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (u: string | URL) => fakeFetch(u)));
+    const res = await POST(
+      request(
+        { icsText: ICS, home: { lat: 40.7934, lon: -77.86 }, from: "2026-10-26T04:00:00Z", to: "2026-11-02T05:00:00Z", tz: "America/New_York" },
+        "7.7.7.7",
+      ),
+    );
+    const plan = (await res.json()) as PlanResponse;
+    expect(plan.week?.busiest?.day).toBe("Mon, Oct 26");
+    expect(plan.week?.risky.map((r) => r.to)).toEqual(["CMPSC 132"]);
+    expect(plan.week?.rainyDays.map((d) => d.day)).toEqual(["Mon, Oct 26"]);
   }, 20_000);
 
   it("accepts several calendars and warns about a bad one", async () => {
