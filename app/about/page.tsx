@@ -25,7 +25,7 @@ const stack = [
   },
   {
     label: "AI",
-    body: "Gemini (or Claude if there's no Gemini key) writes the bring list and brief. The code does the time math, so the AI can't invent leave times.",
+    body: "Gemini, Groq or Claude writes the bring list and brief, whichever key works first. With no key, built-in rules write them instead. The code does the time math, so the AI can't invent leave times.",
   },
 ];
 

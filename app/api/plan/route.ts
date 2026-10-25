@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { aiPlan } from "@/lib/ai";
+import { aiPlan, type AiProvider } from "@/lib/ai";
 import { ruleBring } from "@/lib/bring";
+import { templateBrief, templateBring } from "@/lib/templatePlan";
 import { loadCalendars, MAX_CALENDARS, type CalendarSource } from "@/lib/calendars";
 import { geocodeAddress, geocodeMany, isVirtual, type LatLon } from "@/lib/geocode";
 import { planLeave, startsFromPrevious } from "@/lib/leaveTime";
@@ -64,7 +65,7 @@ export type PlannedClass = {
 
 export type DueItem = { id: string; title: string; source: string; start: string; allDay: boolean };
 
-export type PlanResponse = { home: LatLon; classes: PlannedClass[]; due: DueItem[]; brief: string | null; aiUsed: boolean; aiProvider?: "gemini" | "claude"; aiError?: string; warnings: string[]; week?: WeekSummary };
+export type PlanResponse = { home: LatLon; classes: PlannedClass[]; due: DueItem[]; brief: string | null; aiUsed: boolean; aiProvider?: AiProvider | "template"; aiError?: string; warnings: string[]; week?: WeekSummary };
 
 const fail = (msg: string, status = 400) => NextResponse.json({ error: msg }, { status });
 
@@ -163,6 +164,7 @@ export async function POST(req: NextRequest) {
   const fmtDay = (day: string) =>
     new Intl.DateTimeFormat("en-US", { timeZone: "UTC", weekday: "short", month: "short", day: "numeric" }).format(new Date(`${day}T12:00:00Z`));
   const dueOut: DueItem[] = due.map((d) => ({ id: d.id, title: d.title, source: d.source, start: d.start, allDay: d.allDay }));
+  const dueFmt = dueOut.map((d) => ({ title: d.title, due: d.allDay ? `${fmtDay(d.start)} (all day)` : fmt(d.start) }));
   const ai = await aiPlan(
     classes.map((c, i) => ({
       id: c.id,
@@ -177,14 +179,25 @@ export async function POST(req: NextRequest) {
         : "unknown",
       ruleBring: c.bring,
     })),
-    dueOut.map((d) => ({ title: d.title, due: d.allDay ? `${fmtDay(d.start)} (all day)` : fmt(d.start) })),
+    dueFmt,
   );
-  if (ai.ok) for (const c of classes) if (ai.bring[c.id]?.length) c.bring = ai.bring[c.id];
+  let brief: string | null = null;
+  if (ai.ok) {
+    brief = ai.brief;
+    for (const c of classes) if (ai.bring[c.id]?.length) c.bring = ai.bring[c.id];
+  } else if (classes.length || dueFmt.length) {
+    // No working AI: same brief + bring list from rules, so the plan is still complete.
+    brief = templateBrief(
+      classes.map((c) => ({ ...c, start: fmt(c.start), leaveBy: c.leaveBy ? fmt(c.leaveBy) : null })),
+      dueFmt,
+    );
+    for (const c of classes) c.bring = templateBring(c.title, c.bring);
+  }
 
   // Multi-day plans get the "Reality Check" summary.
   const week = to.getTime() - from.getTime() > 1.5 * 86_400_000 ? weekSummary(classes, tz) : undefined;
 
-  return NextResponse.json({ home, classes, due: dueOut, week, brief: ai.ok ? ai.brief : null, aiUsed: ai.ok, aiProvider: ai.ok ? ai.provider : undefined, aiError: ai.ok ? undefined : ai.reason, warnings } satisfies PlanResponse, {
+  return NextResponse.json({ home, classes, due: dueOut, week, brief, aiUsed: ai.ok, aiProvider: ai.ok ? ai.provider : brief ? "template" : undefined, aiError: ai.ok ? undefined : ai.reason, warnings } satisfies PlanResponse, {
     headers: { "cache-control": "no-store" },
   });
 }

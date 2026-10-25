@@ -97,6 +97,9 @@ describe("POST /api/plan", () => {
 
     expect(club.note).toBe("Online class.");
     expect(plan.aiUsed).toBe(false); // no key in tests
+    expect(plan.aiProvider).toBe("template"); // ...so the rule-based brief fills in
+    expect(plan.brief).toMatch(/^Leave by .+ for MATH 230/);
+    expect(math.bring).toContain("Notebook + pen"); // calculator already covered by the exam rule;
     expect(plan.week).toBeUndefined(); // single day: no weekly check
   }, 20_000);
 
