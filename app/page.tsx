@@ -63,6 +63,11 @@ const subscribeNoop = () => () => {};
 
 const MAX_CALENDARS = 5;
 
+const dueWhen = (d: { start: string; allDay: boolean }) =>
+  d.allDay
+    ? new Date(d.start + "T00:00").toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })
+    : new Date(d.start).toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+
 const dayHeading = (iso: string) => new Date(iso).toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
 
 const input =
@@ -303,11 +308,12 @@ export default function Page() {
               ))}
             </ul>
           )}
-          {plan.classes.length === 0 ? (
-            <p className="text-center text-slate-500">No classes {labelFor(planWhen)}. Enjoy 🎉</p>
+          {plan.classes.length === 0 && plan.due.length === 0 ? (
+            <p className="text-center text-slate-500">Nothing on your calendar {labelFor(planWhen)}. Enjoy 🎉</p>
           ) : (
             <>
               <div className="rounded-xl bg-blue-600 p-4 text-white">
+                {plan.classes.length === 0 && <p className="text-lg font-semibold">No classes {labelFor(planWhen)}</p>}
                 {first && (
                   <p className="text-lg font-semibold">
                     First leave-by:{" "}
@@ -322,7 +328,23 @@ export default function Page() {
                 {plan.aiProvider && <p className="mt-1 text-xs opacity-70">✨ Brief by {plan.aiProvider === "gemini" ? "Gemini" : "Claude"}</p>}
                 {!plan.aiUsed && <p className="mt-1 text-xs opacity-80">AI brief unavailable: {plan.aiError ?? "unknown error"} Showing the basics.</p>}
               </div>
-              <RouteMap plan={plan} />
+              {plan.due.length > 0 && (
+                <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+                  <h2 className="mb-2 font-semibold">📝 Due {labelFor(planWhen)}</h2>
+                  <ul className="space-y-1 text-sm">
+                    {plan.due.map((d) => (
+                      <li key={d.id} className="flex justify-between gap-3">
+                        <span>
+                          {d.title}
+                          {new Set(plan.due.map((x) => x.source)).size > 1 && <span className="text-xs text-slate-500"> · {d.source}</span>}
+                        </span>
+                        <span className="shrink-0 text-slate-500">{dueWhen(d)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {plan.classes.length > 0 && <RouteMap plan={plan} />}
               {plan.classes.map((c, i) => {
                 const newDay = planWhen === "week" && (i === 0 || dayHeading(c.start) !== dayHeading(plan.classes[i - 1].start));
                 return (
