@@ -115,7 +115,7 @@ export default function AboutPage() {
         <div
           role="math"
           aria-label="t leave equals t class minus t travel minus t buffer minus t weather"
-          className="flex flex-wrap items-baseline gap-2 rounded-xl border-l-4 border-primary bg-primary/10 px-4 py-3 font-serif text-lg italic"
+          className="flex flex-wrap items-baseline gap-2 rounded-xl border-l-4 border-highlight bg-highlight/10 px-4 py-3 font-serif text-lg italic"
         >
           <span>t<sub className="not-italic">leave</sub></span>
           <span className="not-italic text-muted-foreground">=</span>

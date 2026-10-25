@@ -62,7 +62,7 @@ export default function ClassCard({
         {c.leaveBy && (
           <div className="shrink-0 text-right">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Leave by</p>
-            <p className="text-2xl font-bold text-primary">{time(c.leaveBy)}</p>
+            <p className="text-2xl font-bold text-highlight">{time(c.leaveBy)}</p>
           </div>
         )}
       </div>

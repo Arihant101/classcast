@@ -420,7 +420,7 @@ export default function Page() {
             <p className="text-center text-muted-foreground">Nothing on your calendar {labelFor(planWhen)}. Enjoy 🎉</p>
           ) : (
             <>
-              <div className="rounded-xl bg-primary p-4 text-primary-foreground">
+              <div className="rounded-xl bg-linear-to-r from-red-600 to-orange-500 p-4 text-white">
                 {plan.classes.length === 0 && <p className="text-lg font-semibold">No classes {labelFor(planWhen)}</p>}
                 {first && (
                   <p className="text-lg font-semibold">
@@ -442,7 +442,7 @@ export default function Page() {
                     <CardTitle>📝 Due {labelFor(planWhen)}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                  <ul className="list-disc space-y-1.5 pl-5 text-sm marker:text-primary">
+                  <ul className="list-disc space-y-1.5 pl-5 text-sm marker:text-highlight">
                     {plan.due.map((d) => {
                       const { name, course } = splitCourse(d.title);
                       return (
