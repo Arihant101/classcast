@@ -360,8 +360,9 @@ export default function Page() {
                   </p>
                 )}
                 {plan.brief && <p className="mt-1 text-sm opacity-90">{plan.brief}</p>}
-                {plan.aiProvider && <p className="mt-1 text-xs opacity-70">✨ Brief by {plan.aiProvider === "gemini" ? "Gemini" : "Claude"}</p>}
-                {!plan.aiUsed && <p className="mt-1 text-xs opacity-80">AI brief unavailable: {plan.aiError ?? "unknown error"} Showing the basics.</p>}
+                {plan.aiProvider && plan.aiProvider !== "template" && (
+                  <p className="mt-1 text-xs opacity-70">✨ Brief by {{ gemini: "Gemini", groq: "Groq", claude: "Claude" }[plan.aiProvider]}</p>
+                )}
               </div>
               {plan.week && <WeekCheck week={plan.week} />}
               {plan.due.length > 0 && (
@@ -406,7 +407,7 @@ export default function Page() {
       )}
 
       <footer className="mt-10 print:hidden text-center text-xs text-muted-foreground">
-        Weather: Open-Meteo · Maps: © OpenStreetMap · Routes: openrouteservice · AI: Gemini
+        Weather: Open-Meteo · Maps: © OpenStreetMap · Routes: openrouteservice · AI: Gemini / Groq / Claude (optional)
         <span className="mx-1">·</span>
         <Link href="/about" className="underline hover:text-foreground">
           About

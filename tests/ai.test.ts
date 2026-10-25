@@ -13,6 +13,7 @@ afterEach(() => {
 describe("aiPlan", () => {
   it("explains a missing key", async () => {
     vi.stubEnv("GEMINI_API_KEY", "");
+    vi.stubEnv("GROQ_API_KEY", "");
     vi.stubEnv("ANTHROPIC_API_KEY", "");
     expect(await aiPlan(input)).toEqual({ ok: false, reason: expect.stringMatching(/No AI key/) });
   });
@@ -39,5 +40,21 @@ describe("aiPlan", () => {
     vi.stubEnv("GEMINI_API_KEY", "AIzaTEST");
     vi.stubGlobal("fetch", vi.fn(async () => Response.json({ candidates: [{ content: { parts: [{ text: '{"brief": 5}' }] }, finishReason: "STOP" }] })));
     expect(await aiPlan(input)).toEqual({ ok: false, reason: expect.stringMatching(/couldn't be read/) });
+  });
+
+  it("falls through to Groq when Gemini fails", async () => {
+    vi.stubEnv("GEMINI_API_KEY", "AIzaTEST");
+    vi.stubEnv("GROQ_API_KEY", "gsk_TEST");
+    vi.stubEnv("ANTHROPIC_API_KEY", "");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init: RequestInit) => {
+        if (url.includes("googleapis")) return Response.json({ error: { message: "billing required" } }, { status: 403 });
+        expect((init.headers as Record<string, string>).authorization).toBe("Bearer gsk_TEST");
+        const reply = { brief: "Leave by 8:48 AM.", classes: [{ id: "a", bring: ["Calculator"] }] };
+        return Response.json({ choices: [{ message: { content: JSON.stringify(reply) } }] });
+      }),
+    );
+    expect(await aiPlan(input)).toEqual({ ok: true, provider: "groq", brief: "Leave by 8:48 AM.", bring: { a: ["Calculator"] } });
   });
 });
