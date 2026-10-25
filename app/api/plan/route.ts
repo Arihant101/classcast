@@ -61,7 +61,9 @@ export type PlannedClass = {
   note?: string;
 };
 
-export type PlanResponse = { home: LatLon; classes: PlannedClass[]; brief: string | null; aiUsed: boolean; aiProvider?: "gemini" | "claude"; aiError?: string; warnings: string[] };
+export type DueItem = { id: string; title: string; source: string; start: string; allDay: boolean };
+
+export type PlanResponse = { home: LatLon; classes: PlannedClass[]; due: DueItem[]; brief: string | null; aiUsed: boolean; aiProvider?: "gemini" | "claude"; aiError?: string; warnings: string[] };
 
 const fail = (msg: string, status = 400) => NextResponse.json({ error: msg }, { status });
 
@@ -96,7 +98,7 @@ export async function POST(req: NextRequest) {
   if (b.icsText) sources.push({ label: `Calendar ${sources.length + 1}`, ics: b.icsText });
   if (sources.length > MAX_CALENDARS) return fail(`Up to ${MAX_CALENDARS} calendars at a time.`);
 
-  const { events, warnings, loadedCount } = await loadCalendars(sources, from, to);
+  const { events, due, warnings, loadedCount } = await loadCalendars(sources, from, to, tz);
   if (loadedCount === 0) return fail(warnings.join(" "));
 
   // 2. Home
@@ -157,6 +159,9 @@ export async function POST(req: NextRequest) {
   // 6. AI brief + bring list
   const fmt = (iso: string) =>
     new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short", hour: "numeric", minute: "2-digit" }).format(new Date(iso));
+  const fmtDay = (day: string) =>
+    new Intl.DateTimeFormat("en-US", { timeZone: "UTC", weekday: "short", month: "short", day: "numeric" }).format(new Date(`${day}T12:00:00Z`));
+  const dueOut: DueItem[] = due.map((d) => ({ id: d.id, title: d.title, source: d.source, start: d.start, allDay: d.allDay }));
   const ai = await aiPlan(
     classes.map((c, i) => ({
       id: c.id,
@@ -171,10 +176,11 @@ export async function POST(req: NextRequest) {
         : "unknown",
       ruleBring: c.bring,
     })),
+    dueOut.map((d) => ({ title: d.title, due: d.allDay ? `${fmtDay(d.start)} (all day)` : fmt(d.start) })),
   );
   if (ai.ok) for (const c of classes) if (ai.bring[c.id]?.length) c.bring = ai.bring[c.id];
 
-  return NextResponse.json({ home, classes, brief: ai.ok ? ai.brief : null, aiUsed: ai.ok, aiProvider: ai.ok ? ai.provider : undefined, aiError: ai.ok ? undefined : ai.reason, warnings } satisfies PlanResponse, {
+  return NextResponse.json({ home, classes, due: dueOut, brief: ai.ok ? ai.brief : null, aiUsed: ai.ok, aiProvider: ai.ok ? ai.provider : undefined, aiError: ai.ok ? undefined : ai.reason, warnings } satisfies PlanResponse, {
     headers: { "cache-control": "no-store" },
   });
 }

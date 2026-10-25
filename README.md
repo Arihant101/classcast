@@ -4,6 +4,7 @@ When to leave, what to bring, and how to get to class. Built from your class cal
 
 - Paste up to 5 iCal links and/or upload `.ics` files (merged, de-duplicated, labeled by calendar), then share your location (or type an address)
 - For each class: **leave-by time**, route + minutes, weather at that hour, and a bring list
+- Assignments and deadlines (e.g. a Canvas feed: all-day or due-at-a-time items) show in a separate **Due** list
 - Back-to-back classes are routed from the previous class, with a warning if the gap is too short
 - Gemini (or Claude) writes a short daily brief and tailors the bring list
 
