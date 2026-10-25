@@ -61,7 +61,7 @@ const lessons = [
   "Real calendar feeds are messier than the spec: test with the shapes people actually use.",
 ];
 
-const card = "rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900";
+const card = "rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10";
 const section = "mt-6 space-y-3";
 const heading = "text-xl font-semibold";
 
@@ -69,11 +69,11 @@ export default function AboutPage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <header className="mb-6">
-        <Link href="/" className="text-sm text-blue-600 hover:underline">
+        <Link href="/" className="text-sm text-primary hover:underline">
           ← Back to ClassCast
         </Link>
         <h1 className="mt-2 text-3xl font-bold">About ClassCast ☔</h1>
-        <p className="text-slate-500">When do I leave, which route, and what do I bring?</p>
+        <p className="text-muted-foreground">When do I leave, which route, and what do I bring?</p>
       </header>
 
       <section className={section} aria-labelledby="inspiration">
@@ -94,7 +94,7 @@ export default function AboutPage() {
           {features.map((f) => (
             <li key={f.title} className={card}>
               <h3 className="font-semibold">{f.title}</h3>
-              <p className="text-sm text-slate-500">{f.body}</p>
+              <p className="text-sm text-muted-foreground">{f.body}</p>
             </li>
           ))}
         </ul>
@@ -102,7 +102,7 @@ export default function AboutPage() {
 
       <section className={section} aria-labelledby="how-we-built-it">
         <h2 id="how-we-built-it" className={heading}>How we built it</h2>
-        <dl className={`${card} divide-y divide-slate-200 py-0 dark:divide-slate-800`}>
+        <dl className={`${card} divide-y divide-border py-0`}>
           {stack.map((s) => (
             <div key={s.label} className="grid gap-1 py-3 sm:grid-cols-[5rem_1fr] sm:gap-3">
               <dt className="font-semibold">{s.label}</dt>
@@ -115,19 +115,19 @@ export default function AboutPage() {
         <div
           role="math"
           aria-label="t leave equals t class minus t travel minus t buffer minus t weather"
-          className="flex flex-wrap items-baseline gap-2 rounded-xl border-l-4 border-blue-600 bg-blue-50 px-4 py-3 font-serif text-lg italic dark:bg-blue-950"
+          className="flex flex-wrap items-baseline gap-2 rounded-xl border-l-4 border-highlight bg-highlight/10 px-4 py-3 font-serif text-lg italic"
         >
           <span>t<sub className="not-italic">leave</sub></span>
-          <span className="not-italic text-slate-500">=</span>
+          <span className="not-italic text-muted-foreground">=</span>
           <span>t<sub className="not-italic">class</sub></span>
-          <span className="not-italic text-slate-500">&minus;</span>
+          <span className="not-italic text-muted-foreground">&minus;</span>
           <span>t<sub className="not-italic">travel</sub></span>
-          <span className="not-italic text-slate-500">&minus;</span>
+          <span className="not-italic text-muted-foreground">&minus;</span>
           <span>t<sub className="not-italic">buffer</sub></span>
-          <span className="not-italic text-slate-500">&minus;</span>
+          <span className="not-italic text-muted-foreground">&minus;</span>
           <span>t<sub className="not-italic">weather</sub></span>
         </div>
-        <p className="text-sm text-slate-500">With a 5 minute buffer, plus 15% more travel time in rain and 25% in snow.</p>
+        <p className="text-sm text-muted-foreground">With a 5 minute buffer, plus 15% more travel time in rain and 25% in snow.</p>
       </section>
 
       <section className={section} aria-labelledby="challenges">
