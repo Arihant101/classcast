@@ -6,3 +6,26 @@
 body {
   @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
 }
+
+/* Save as PDF (browser print): plain, ink-friendly, readable in any theme */
+@media print {
+  @page {
+    margin: 12mm;
+  }
+  :root {
+    color-scheme: light;
+  }
+  html {
+    background: #fff !important;
+  }
+  * {
+    background: transparent !important;
+    color: #000 !important;
+    border-color: #ccc !important;
+    box-shadow: none !important;
+  }
+  article,
+  li {
+    break-inside: avoid;
+  }
+}

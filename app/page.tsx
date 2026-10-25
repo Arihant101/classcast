@@ -64,6 +64,47 @@ const subscribeNoop = () => () => {};
 
 const MAX_CALENDARS = 5;
 
+// Uses the browser's print dialog ("Save as PDF"); the print styles in globals.css hide the form and map.
+function saveAsPdf(when: When) {
+  const title = document.title;
+  document.title = `ClassCast ${labelFor(when)}`;
+  window.addEventListener("afterprint", () => (document.title = title), { once: true });
+  window.print();
+}
+
+// Plain-text version of the plan for email. Kept short so mailto/Gmail links stay under URL limits.
+function planText(plan: PlanResponse, when: When) {
+  const t = (iso: string) =>
+    new Date(iso).toLocaleString([], { ...(when === "week" ? { weekday: "short" } : {}), hour: "numeric", minute: "2-digit" });
+  const lines = [`ClassCast plan ${labelFor(when)}`, ""];
+  if (plan.brief) lines.push(plan.brief, "");
+  if (plan.classes.length) {
+    lines.push("Classes");
+    for (const c of plan.classes) {
+      const leave = c.leaveBy ? ` (leave by ${t(c.leaveBy)}, ${c.travelMin} min)` : "";
+      lines.push(`- ${t(c.start)} ${c.title}${c.location ? ` @ ${c.location}` : ""}${leave}`);
+      if (c.bring.length) lines.push(`  Bring: ${c.bring.join(", ")}`);
+    }
+    lines.push("");
+  }
+  if (plan.due.length) {
+    lines.push("Due");
+    for (const d of plan.due) lines.push(`- ${d.title} (${dueWhen(d)})`);
+  }
+  const text = lines.join("\n").trim();
+  return text.length > 1800 ? text.slice(0, 1780) + "\n…(trimmed)" : text;
+}
+
+function emailLinks(plan: PlanResponse, when: When) {
+  const subject = `ClassCast plan ${labelFor(when)}`;
+  const body = planText(plan, when);
+  const q = (k: string, v: string) => `${k}=${encodeURIComponent(v)}`;
+  return {
+    mailto: `mailto:?${q("subject", subject)}&${q("body", body)}`,
+    gmail: `https://mail.google.com/mail/?view=cm&fs=1&${q("su", subject)}&${q("body", body)}`,
+  };
+}
+
 const dueWhen = (d: { start: string; allDay: boolean }) =>
   d.allDay
     ? new Date(d.start + "T00:00").toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })
@@ -73,6 +114,7 @@ const dayHeading = (iso: string) => new Date(iso).toLocaleDateString([], { weekd
 
 const input =
   "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900";
+const action = "rounded-lg border border-slate-300 px-3 py-1.5 dark:border-slate-700";
 const pill = (on: boolean) =>
   `rounded-full px-3 py-1 text-sm ${on ? "bg-blue-600 text-white" : "bg-slate-200 dark:bg-slate-800"}`;
 
@@ -188,7 +230,7 @@ export default function Page() {
         <p className="text-slate-500">When to leave, what to bring, and how to get there.</p>
       </header>
 
-      <form onSubmit={submit} className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+      <form onSubmit={submit} className="space-y-4 print:hidden rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
         <div
           className={`space-y-2 rounded-lg transition ${dragging ? "bg-blue-50 outline-2 outline-dashed outline-offset-4 outline-blue-500 dark:bg-blue-950" : ""}`}
           onDragOver={(e) => {
@@ -337,6 +379,21 @@ export default function Page() {
 
       {plan && (
         <section className="mt-6 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
+            <h2 className="font-semibold">Your plan {labelFor(planWhen)}</h2>
+            <div className="flex flex-wrap gap-2 text-sm">
+              <button type="button" onClick={() => saveAsPdf(planWhen)} className={action}>
+                📄 Save as PDF
+              </button>
+              <a href={emailLinks(plan, planWhen).gmail} target="_blank" rel="noopener noreferrer" className={action}>
+                ✉️ Gmail
+              </a>
+              <a href={emailLinks(plan, planWhen).mailto} className={action}>
+                📧 Email
+              </a>
+            </div>
+          </div>
+          <h2 className="hidden text-xl font-semibold print:block">ClassCast plan {labelFor(planWhen)}</h2>
           {plan.warnings.length > 0 && (
             <ul className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-300">
               {plan.warnings.map((w) => (
@@ -380,7 +437,11 @@ export default function Page() {
                   </ul>
                 </div>
               )}
-              {plan.classes.length > 0 && <RouteMap plan={plan} />}
+              {plan.classes.length > 0 && (
+                <div className="print:hidden">
+                  <RouteMap plan={plan} />
+                </div>
+              )}
               {plan.classes.map((c, i) => {
                 const newDay = planWhen === "week" && (i === 0 || dayHeading(c.start) !== dayHeading(plan.classes[i - 1].start));
                 return (
@@ -395,7 +456,7 @@ export default function Page() {
         </section>
       )}
 
-      <footer className="mt-10 text-center text-xs text-slate-400">
+      <footer className="mt-10 print:hidden text-center text-xs text-slate-400">
         Weather: Open-Meteo · Maps: © OpenStreetMap · Routes: openrouteservice · AI: Gemini
         <span className="mx-1">·</span>
         <Link href="/about" className="underline hover:text-slate-600 dark:hover:text-slate-300">
