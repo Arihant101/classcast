@@ -181,7 +181,7 @@ export async function POST(req: NextRequest) {
   );
   if (ai.ok) for (const c of classes) if (ai.bring[c.id]?.length) c.bring = ai.bring[c.id];
 
-  // Multi-day plans get the "Weekend Reality Check" summary.
+  // Multi-day plans get the "Reality Check" summary.
   const week = to.getTime() - from.getTime() > 1.5 * 86_400_000 ? weekSummary(classes, tz) : undefined;
 
   return NextResponse.json({ home, classes, due: dueOut, week, brief: ai.ok ? ai.brief : null, aiUsed: ai.ok, aiProvider: ai.ok ? ai.provider : undefined, aiError: ai.ok ? undefined : ai.reason, warnings } satisfies PlanResponse, {

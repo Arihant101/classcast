@@ -1,4 +1,4 @@
-// "Weekend Reality Check": a look across the whole week so tight turnarounds and
+// "Reality Check": a look across the whole week so tight turnarounds and
 // busy days show up before Monday. All of this is plain math on the planned classes.
 import { BUFFER_MIN } from "./leaveTime";
 import { isWet, isSnow, type Weather } from "./weather";
