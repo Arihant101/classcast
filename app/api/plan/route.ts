@@ -3,7 +3,7 @@ import { z } from "zod";
 import { aiPlan } from "@/lib/ai";
 import { ruleBring } from "@/lib/bring";
 import { loadCalendars, MAX_CALENDARS, type CalendarSource } from "@/lib/calendars";
-import { geocodeAddress, geocodeLocation, isVirtual, type LatLon } from "@/lib/geocode";
+import { geocodeAddress, geocodeMany, isVirtual, type LatLon } from "@/lib/geocode";
 import { planLeave, startsFromPrevious } from "@/lib/leaveTime";
 import { rateLimited } from "@/lib/rateLimit";
 import { getRoute, type Route } from "@/lib/route";
@@ -107,8 +107,8 @@ export async function POST(req: NextRequest) {
   if (!home) return fail("Couldn't find that home address. Try adding the city.");
 
   // 3. Class locations
-  const coords: (LatLon | null)[] = [];
-  for (const ev of events) coords.push(ev.geo ?? (ev.location ? await geocodeLocation(ev.location) : null));
+  const places = await geocodeMany(events.filter((ev) => !ev.geo && ev.location).map((ev) => ev.location!));
+  const coords: (LatLon | null)[] = events.map((ev) => ev.geo ?? (ev.location ? places.get(ev.location.trim()) ?? null : null));
 
   // 4. Weather for every point we know
   const forecast = await getForecasts([home, ...coords.filter((c): c is LatLon => !!c)]).catch(
