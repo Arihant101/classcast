@@ -95,7 +95,7 @@ function planText(plan: PlanResponse, when: When) {
   if (plan.week) {
     const w = plan.week;
     const hm = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-    lines.push("Weekend Reality Check");
+    lines.push("Reality Check");
     if (w.busiest) lines.push(`• Busiest day: ${w.busiest.day} (${w.busiest.classes} classes, ${w.busiest.hours} h)`);
     for (const r of w.risky) lines.push(`• Risky: ${r.day} ${r.from} → ${r.to}, ${r.gapMin} min gap for a ${r.travelMin} min trip`);
     for (const d of w.rainyDays) lines.push(`• ${d.snow ? "Snow" : "Rain"}: ${d.day}`);

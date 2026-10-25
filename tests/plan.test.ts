@@ -100,7 +100,7 @@ describe("POST /api/plan", () => {
     expect(plan.week).toBeUndefined(); // single day: no weekly check
   }, 20_000);
 
-  it("adds the Weekend Reality Check for a week range", async () => {
+  it("adds the Reality Check for a week range", async () => {
     vi.stubGlobal("fetch", vi.fn(async (u: string | URL) => fakeFetch(u)));
     const res = await POST(
       request(

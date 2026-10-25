@@ -21,7 +21,7 @@ export default function WeekCheck({ week }: { week: WeekSummary }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>🗓️ Weekend Reality Check</CardTitle>
+        <CardTitle>🗓️ Reality Check</CardTitle>
         <CardDescription>Tight turnarounds and busy days, spotted before the week starts.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-2">
