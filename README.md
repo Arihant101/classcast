@@ -8,7 +8,7 @@ When to leave, what to bring, and how to get to class. Built from your class cal
 - Back-to-back classes are routed from the previous class, with a warning if the gap is too short
 - **Reality Check** (week view): busiest day, risky back-to-backs, rainy days, and free windows of 90+ minutes
 - A short daily brief and tailored bring list: from AI (Gemini, Groq or Claude) when a key works, otherwise from built-in rules, so **no paid key is needed**
-- **Remember me** checkbox saves your calendar links on this device for 30 days
+- **Remember me** checkbox saves your calendar links on this device for 15 days
 - **Save as PDF** (print styles) or send the plan with **Gmail / Email** (prefilled plain text, nothing sent through the server)
 - shadcn/ui (Base UI) with a red-orange and cyan theme, light/dark mode, and wrapping for long calendar text
 
@@ -58,7 +58,7 @@ browser ──POST /api/plan──▶ safeFetch (iCal) ─▶ parse + expand rep
 - **Prompt injection:** calendar text is untrusted. It goes to the model as JSON data with no tools, and the output is schema-validated and length-capped. Times are computed in code, not by the model.
 - **XSS:** everything is rendered as text by React. A per-request nonce CSP (`proxy.ts`) blocks injected scripts, plus HSTS and other headers in `next.config.ts`.
 - **Abuse:** per-IP rate limit on `/api/plan` (in-memory, per instance).
-- **Remember me:** opt-in. Links go in an `HttpOnly`, `Secure`, `SameSite=Strict` cookie scoped to `/api/remember` for 30 days, so page scripts can't read it and it isn't sent with any other request. "Forget saved links" deletes it.
+- **Remember me:** opt-in. Links go in an `HttpOnly`, `Secure`, `SameSite=Strict` cookie scoped to `/api/remember` for 15 days, so page scripts can't read it and it isn't sent with any other request. "Forget saved links" deletes it.
 - **Privacy:** Vercel Web Analytics counts page views only. Calendar links travel in the POST body, never in URLs, so they never reach analytics or logs.
 
 ## Tests

@@ -3,7 +3,7 @@
 // never with page loads, the plan request, or analytics.
 export const REMEMBER_COOKIE = "cc_links";
 export const REMEMBER_PATH = "/api/remember";
-export const REMEMBER_MAX_AGE = 30 * 24 * 60 * 60; // 30 days
+export const REMEMBER_MAX_AGE = 15 * 24 * 60 * 60; // 15 days
 const MAX_LINKS = 5;
 const MAX_COOKIE = 3800; // browsers cap a cookie at ~4 KB
 

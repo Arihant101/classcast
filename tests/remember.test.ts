@@ -35,7 +35,7 @@ describe("/api/remember", () => {
     expect(cookie).toMatch(/HttpOnly/i);
     expect(cookie).toMatch(/SameSite=strict/i);
     expect(cookie).toMatch(/Path=\/api\/remember/);
-    expect(cookie).toMatch(/Max-Age=2592000/);
+    expect(cookie).toMatch(/Max-Age=1296000/);
 
     const value = cookie.split(";")[0];
     expect(await (await GET(req({ cookie: value }))).json()).toEqual({ links: ["https://a.example/x.ics"] });

@@ -8,7 +8,7 @@ export function GET(req: NextRequest) {
   return NextResponse.json({ links: decodeLinks(req.cookies.get(REMEMBER_COOKIE)?.value) }, { headers: noStore });
 }
 
-/** Saves links for 30 days. */
+/** Saves links for 15 days. */
 export async function POST(req: NextRequest) {
   // JSON-only, plus SameSite=Strict on the cookie, keeps other sites from writing it.
   if (!req.headers.get("content-type")?.includes("application/json")) return NextResponse.json({ error: "Expected JSON." }, { status: 415 });

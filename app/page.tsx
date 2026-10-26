@@ -283,7 +283,7 @@ export default function Page() {
           <p className="text-xs text-muted-foreground">
             Up to {MAX_CALENDARS} calendars.{" "}
             {remember
-              ? "Links are saved for 30 days in a secure cookie only this site's save feature can read. Uploaded files aren't saved. Don't use this on a shared computer."
+              ? "Links are saved for 15 days in a secure cookie only this site's save feature can read. Uploaded files aren't saved. Don't use this on a shared computer."
               : "Links are only used for this request and never saved."}
           </p>
         </div>
