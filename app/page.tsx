@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import ClassCard, { type Units } from "@/components/ClassCard";
 import WeekCheck from "@/components/WeekCheck";
 import type { PlanResponse } from "@/app/api/plan/route";
@@ -63,6 +63,27 @@ export default function Page() {
   const [plan, setPlan] = useState<PlanResponse | null>(null);
   const [planMode, setPlanMode] = useState<Mode>("walk");
   const [planWhen, setPlanWhen] = useState<When>("0");
+  const [remember, setRemember] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  // Restore links saved with "Remember me" (an HttpOnly cookie only /api/remember can read).
+  useEffect(() => {
+    fetch("/api/remember")
+      .then((r) => (r.ok ? r.json() : { links: [] }))
+      .then(({ links: savedLinks }: { links: string[] }) => {
+        if (!savedLinks.length) return;
+        setLinks((cur) => (cur.some((l) => l.trim()) ? cur : savedLinks));
+        setRemember(true);
+        setSaved(true);
+      })
+      .catch(() => {});
+  }, []);
+
+  async function forgetLinks() {
+    await fetch("/api/remember", { method: "DELETE" }).catch(() => {});
+    setRemember(false);
+    setSaved(false);
+  }
 
   function useMyLocation() {
     if (!navigator.geolocation) return setError("Your browser can't share location. Type your address instead.");
@@ -122,6 +143,13 @@ export default function Page() {
     if (!gps && address.trim().length < 3) return setError("Use your location or type a home address.");
 
     setLoading(true);
+    if (remember && filledLinks.length) {
+      fetch("/api/remember", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ links: filledLinks }) })
+        .then((r) => r.ok && setSaved(true))
+        .catch(() => {});
+    } else if (!remember && saved) {
+      forgetLinks();
+    }
     try {
       const res = await fetch("/api/plan", {
         method: "POST",
@@ -241,8 +269,22 @@ export default function Page() {
               <Plus /> Add another link
             </Button>
           )}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" className="size-4 accent-primary" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+              Remember my links on this device
+            </label>
+            {saved && (
+              <Button type="button" variant="link" size="sm" className="h-auto p-0" onClick={forgetLinks}>
+                Forget saved links
+              </Button>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground">
-            Up to {MAX_CALENDARS} calendars. Links are only used for this request and never saved.
+            Up to {MAX_CALENDARS} calendars.{" "}
+            {remember
+              ? "Links are saved for 30 days in a secure cookie only this site's save feature can read. Uploaded files aren't saved. Don't use this on a shared computer."
+              : "Links are only used for this request and never saved."}
           </p>
         </div>
 
