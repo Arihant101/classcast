@@ -1,5 +1,7 @@
 # ClassCast ☔
 
+> **HackPSU snapshot.** This branch (and tag `hackpsu-v1`) is the version submitted to HackPSU on Oct 25, 2026. It's frozen; ongoing work happens on [`main`](https://github.com/Arihant101/classcast/tree/main).
+
 When to leave, what to bring, and how to get to class. Built from your class calendar and the forecast.
 
 - Paste up to 5 iCal links (e.g. LionPATH + Canvas) or drag in `.ics` files. They're merged, de-duplicated, and labeled by calendar. Then share your location (or type an address)
